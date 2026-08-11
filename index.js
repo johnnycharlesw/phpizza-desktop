@@ -3,24 +3,28 @@ let dialup_sfx = document.getElementById('dialup_sfx');
 let fullscreen = false;
 
 
+console.log(iframe);
+
 iframe.addEventListener('load', function (params) {
     if (!(dialup_sfx.paused)) {
         dialup_sfx.pause();
-        dialup_sfx.fastSeek(0);
+        dialup_sfx.currentTime = 6.804707;
     }
+    updateSignedInUsername();
 })
 
 function navigateTo(url) {
     iframe.src=url;
-    dialup_sfx.play();
+    playDialUpSfx();
+    updateSignedInUsername();
 }
 
 function goHome(){
-  navigateTo('http://localhost');
+  navigateTo('http://phpizza.localhost');
 }
 
 function goToAdminPanel() {
-  navigateTo('http://localhost/AdminPanel.php');
+  navigateTo('http://phpizza.localhost/AdminPanel.php');
 }
 
 function toggleFullscreen(){
@@ -31,8 +35,32 @@ function toggleFullscreen(){
   }
 }
 
+function switchUser() {
+    navigateTo('http://phpizza.localhost/SwitchUser.php');
+}
+
+function _closeBrowser() {
+  window.close();
+}
+
+function closeBrowser() {
+  if (window.incognito) {
+    navigateTo('http://phpizza.localhost/DestroySessionToken.php');
+    iframe.addEventListener('load', function (){
+        _closeBrowser();
+    });
+  } else {
+    _closeBrowser();
+  }
+}
+
+
 goHome();
 
-iframe.addEventListener('loadstart', function (params) {
+ function playDialUpSfx() {
     dialup_sfx.play();
-})
+}
+
+iframe.addEventListener('loadstart', playDialUpSfx);
+
+iframe.addEventListener('formdata', playDialUpSfx);

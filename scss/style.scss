@@ -33,7 +33,7 @@ ul#navigation-bar {
     display: flex;
 }
 
-iframe#iframe {
+#iframe {
     height: 90%;
     width: 100%;
     border-style: none;
@@ -50,3 +50,25 @@ ul#titlebar {
     align-items: center;
     app-region: drag; // electron-specific
 }
+
+div#user-dropdown {
+    display: none;
+    background-color: #f0f0f0;
+    > ul {
+        list-style-type: none;
+        
+    }
+}
+
+div#user-dropdown.open {
+    display: block;
+    position:absolute;
+    width:max-content;
+    height: max-content;
+    top: 6em;
+    bottom: 0;
+    left: 20em;
+    right: 0;
+    padding: 10px;
+}
+

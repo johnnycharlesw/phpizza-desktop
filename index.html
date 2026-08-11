@@ -24,10 +24,15 @@
             <li>
                 <ul id="window-controls">
                     <li>
+                        <button id="account_switch_button" onclick="toggleAccountMenu()">
+                            <img src="./node_modules/feather-icons/dist/icons/user.svg" class="icon"></img>
+                        </button>
+                    </li>
+                    <li>
                         <button onclick="toggleFullscreen();"><img src="./node_modules/feather-icons/dist/icons/maximize.svg" width=16 height="16"></button>
                     </li>
                     <li>
-                        <button onclick="window.close()"><img src="./node_modules/feather-icons/dist/icons/x-circle.svg" width=16 height="16"></button>
+                        <button onclick="closeBrowser()"><img src="./node_modules/feather-icons/dist/icons/x-circle.svg" width=16 height="16"></button>
                     </li>
                 </ul>
             </li>
@@ -35,6 +40,17 @@
         <iframe id="iframe" src="http://localhost" sandbox="allow-scripts allow-forms allow-same-origin"></iframe>
         <audio id="dialup_sfx" src="./sounds/freesound_community-the-sound-of-dial-up-internet-6240.mp3" loop></audio>
         <script src="index.js"></script>
+        <div id="user-dropdown">
+            <img src="/node_modules/feather-icons/dist/icons/user.svg" class="icon" width=64 height=64></img>
+            <br>
+            <span>
+                Currently signed in as <span id="username"></span>
+            </span>
+            <br>
+            <button onclick="switchUser()">Switch User</button>
+        </div>
     </div>
+
+    <script src="account-menu.js"></script>
 </body>
 </html>

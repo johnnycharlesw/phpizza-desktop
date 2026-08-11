@@ -1,0 +1,1 @@
+window.incognito = true;
