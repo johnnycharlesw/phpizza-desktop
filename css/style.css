@@ -1,0 +1,54 @@
+html, body, #ui {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+}
+
+ul#titlebar {
+  list-style: none;
+  display: flex;
+  background-color: white;
+}
+
+button {
+  app-region: no-drag;
+}
+
+body {
+  background-color: #f0f0f0;
+}
+
+ul#window-controls {
+  list-style-type: none;
+  background: white;
+  color: black;
+  display: flex;
+}
+
+ul#navigation-bar {
+  list-style-type: none;
+  background: white;
+  color: black;
+  display: flex;
+}
+
+iframe#iframe {
+  height: 90%;
+  width: 100%;
+  border-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+ul#titlebar {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  app-region: drag;
+}
+
+/*# sourceMappingURL=style.css.map */

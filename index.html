@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHPizza Desktop</title>
+    <link rel="shortcut icon" href="./assets/phpizza-cms-branding/logo.png" type="image/x-icon">
+    <link rel="stylesheet" href="./assets/phpizza-ui-framework/style.css">
+    <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+    <div id="ui">
+        <ul id="titlebar">
+            <li>
+                <ul id="navigation-bar">
+                    <li>
+                        <button onclick="goHome()" class="btn tab horizontal">Home</button>
+                    </li>
+                    <li>
+                        <button onclick="goToAdminPanel()" class="btn tab horizontal">Admin Panel</button>
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <ul id="window-controls">
+                    <li>
+                        <button onclick="toggleFullscreen();"><img src="./node_modules/feather-icons/dist/icons/maximize.svg" width=16 height="16"></button>
+                    </li>
+                    <li>
+                        <button onclick="window.close()"><img src="./node_modules/feather-icons/dist/icons/x-circle.svg" width=16 height="16"></button>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+        <iframe id="iframe" src="http://localhost" sandbox="allow-scripts allow-forms allow-same-origin"></iframe>
+        <audio id="dialup_sfx" src="./sounds/freesound_community-the-sound-of-dial-up-internet-6240.mp3" loop></audio>
+        <script src="index.js"></script>
+    </div>
+</body>
+</html>
