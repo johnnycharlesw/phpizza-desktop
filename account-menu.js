@@ -1,57 +1,215 @@
 let userDropdown;
-let username = "NOT_UPDATEd123";
-let usernameHtmlElement = document.getElementById('username');
+let username = 'Loading…';
 let passedOver = false;
 
+function updateUsernameDisplay() {
+  const el = document.getElementById('username');
+  if (el) el.innerText = username;
+}
 
-function getCookie(cname) {
-  let name = cname + "=";
-  let decodedCookie = decodeURIComponent(document.cookie);
-  let ca = decodedCookie.split(';');
-  for(let i = 0; i <ca.length; i++) {
-    let c = ca[i];
-    while (c.charAt(0) == ' ') {
-      c = c.substring(1);
+function parseGetUsernameResponse(body) {
+  if (!body && body !== '') return '';
+
+  // If the caller passed an object (already-parsed JSON), prefer its fields
+  if (typeof body === 'object') {
+    if (body.description) return String(body.description).trim();
+    if (body.html) {
+      return new DOMParser()
+        .parseFromString(String(body.html), 'text/html')
+        .body.textContent.trim();
     }
-    if (c.indexOf(name) == 0) {
-      return c.substring(name.length, c.length);
+    return '';
+  }
+
+  const trimmed = String(body || '').trim();
+  if (!trimmed) return '';
+
+  // JSON string
+  if (trimmed.startsWith('{')) {
+    try {
+      const data = JSON.parse(trimmed);
+      if (data.description) return String(data.description).trim();
+      if (data.html) {
+        return new DOMParser()
+          .parseFromString(data.html, 'text/html')
+          .body.textContent.trim();
+      }
+    } catch {
+      return '';
     }
   }
-  return "";
-}
 
+  // If HTML, try to extract username from meta tags or visible text
+  if (/[<>]/.test(trimmed)) {
+    try {
+      const doc = new DOMParser().parseFromString(trimmed, 'text/html');
+      // meta name="description" often contains username in some endpoints
+      const metaDesc = doc.querySelector('meta[name="description"]');
+      if (metaDesc && metaDesc.content) return String(metaDesc.content).trim();
 
-// Read PHPizza's session token
-async function updateSignedInUsername(){
-    //console.log("Set-Cookie:",iframe.contentWindow.document.cookie);
-    fetch('http://api.phpizza.localhost/GetUsername.php', {
-        credentials: 'include'
-    }).then(function (value){
-        let responseObject = value.json();
-        if (!passedOver) {
-            iframe.contentWindow.postMessage({
-                'phpsessid': getCookie('PHPSESSID')
-            });
-            passedOver=true;
-        }
-        username = responseObject.description;
-    });
-}
+      // Look for visible text like "Currently logged in as John..."
+      const bodyText = (doc.body && doc.body.textContent) ? doc.body.textContent : '';
+      const m = bodyText.match(/Currently\s+(?:logged|signed)\s+in\s+as[:\s]*([A-Za-z0-9_\- ]+)/i);
+      if (m && m[1]) return m[1].trim();
 
-
-function toggleAccountMenu(){
-    if (userDropdown) {
-        let classList = userDropdown.classList;
-        classList.toggle("open");
-    } else {
-        userDropdown = document.getElementById("user-dropdown");
-        toggleAccountMenu();
+      // fallback: look for any meta property or tag that might hold a username
+      const metaOgDesc = doc.querySelector('meta[property="og:description"]') || doc.querySelector('meta[name="description"]');
+      if (metaOgDesc && metaOgDesc.content) return String(metaOgDesc.content).trim();
+    } catch {
+      // parsing failed -> continue
     }
+    return '';
+  }
+
+  // Plain text with no HTML
+  if (!/[<>]/.test(trimmed)) return trimmed;
+
+  return '';
 }
 
+async function updateSignedInUsername() {
+  const iframe = document.getElementById('iframe');
 
+  try {
+    let name = '';
+    let phpsessid = '';
 
-window.setInterval(function (params) {
-    usernameHtmlElement.innerText = username;
-}, 100);
+    if (window.phpizzaDesktop?.getSignedInUser) {
+      const result = await window.phpizzaDesktop.getSignedInUser();
+      name = parseGetUsernameResponse(result.body);
+      phpsessid = result.phpsessid || '';
+    }
 
+    if (!name) {
+      try {
+        const response = await fetch('/api/GetUsername.php', {
+          credentials: 'include',
+          headers: { Accept: 'application/json' },
+        });
+        if (response.ok) {
+          name = parseGetUsernameResponse(await response.text());
+        }
+      } catch (error) {
+        console.error('[account-menu] API username fetch failed:', error);
+      }
+    }
+
+    username = name || 'Guest';
+    // If server reports Guest but the iframe is same-origin and shows a logged-in user,
+    // try to extract the username from the iframe UI as a fallback.
+    if ((username === 'Guest' || !username) && iframe?.contentDocument) {
+      try {
+        const doc = iframe.contentDocument;
+        // Look for an element that mentions "Currently logged in as" or similar
+        const xpath = "//*[contains(text(), 'Currently logged in as') or contains(text(), 'Currently signed in as')]";
+        const node = doc.evaluate(xpath, doc, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+        if (node) {
+          const text = node.textContent || '';
+          const m = text.match(/Currently (?:logged|signed) in as\s*:?\s*([A-Za-z0-9_\- ]+)/i);
+          if (m && m[1]) {
+            username = m[1].trim();
+          }
+        }
+      } catch (err) {
+        // ignore cross-origin or other access errors
+      }
+    }
+    updateUsernameDisplay();
+
+    if (!passedOver && iframe?.contentWindow && phpsessid) {
+      iframe.contentWindow.postMessage({ phpsessid });
+      passedOver = true;
+    }
+  } catch (error) {
+    console.error('[account-menu] Failed to fetch username:', error);
+    username = 'Guest';
+    updateUsernameDisplay();
+  }
+}
+
+function toggleAccountMenu() {
+  if (!userDropdown) {
+    userDropdown = document.getElementById('user-dropdown');
+    // Move dropdown to document.body to avoid stacking-context issues (iframe z-index)
+    try {
+      if (userDropdown && userDropdown.parentElement !== document.body) {
+        document.body.appendChild(userDropdown);
+      }
+    } catch (e) {
+      console.debug('[account-menu] failed to move dropdown to body', e);
+    }
+  }
+
+  console.debug('[account-menu] toggleAccountMenu called');
+  if (!userDropdown) {
+    console.warn('[account-menu] user-dropdown element not found');
+    return;
+  }
+
+  const wasOpen = userDropdown.classList.contains('open');
+  if (wasOpen) {
+    userDropdown.classList.remove('open');
+    userDropdown.style.position = '';
+    userDropdown.style.top = '';
+    userDropdown.style.left = '';
+    userDropdown.style.zIndex = '';
+    userDropdown.style.visibility = '';
+    if (window.__accountMenuOutsideHandler) {
+      document.removeEventListener('click', window.__accountMenuOutsideHandler, true);
+      window.__accountMenuOutsideHandler = null;
+    }
+    return;
+  }
+
+  // Position the dropdown relative to the account switch button if possible.
+  // Measure the dropdown while hidden so width/height are available.
+  const btn = document.getElementById('account_switch_button');
+  userDropdown.style.visibility = 'hidden';
+  userDropdown.classList.add('open');
+  userDropdown.style.position = 'fixed';
+  userDropdown.style.zIndex = 100000;
+  userDropdown.style.pointerEvents = 'auto';
+  userDropdown.style.boxShadow = '0 6px 24px rgba(0,0,0,0.25)';
+
+  try {
+    if (btn) {
+      const btnRect = btn.getBoundingClientRect();
+      const ddRect = userDropdown.getBoundingClientRect();
+      // place below the button using viewport coords (fixed positioning)
+      let top = btnRect.bottom + 8;
+      let left = btnRect.right - ddRect.width;
+      // constrain to viewport
+      const minLeft = 8;
+      const maxLeft = window.innerWidth - ddRect.width - 8;
+      if (left < minLeft) left = minLeft;
+      if (left > maxLeft) left = maxLeft;
+
+      userDropdown.style.top = top + 'px';
+      userDropdown.style.left = left + 'px';
+    } else {
+      // fallback: center near top-right
+      userDropdown.style.top = '56px';
+      userDropdown.style.right = '16px';
+      userDropdown.style.left = '';
+    }
+  } catch (e) {
+    console.debug('[account-menu] position calculation failed', e);
+  }
+
+  // Make it visible now that position is set
+  userDropdown.style.visibility = 'visible';
+
+  // Add outside click handler to close the menu
+  window.__accountMenuOutsideHandler = function outsideClick(e) {
+    const target = e.target;
+    if (!userDropdown.contains(target) && target !== btn) {
+      toggleAccountMenu();
+    }
+  };
+  // Use capture so we run before other handlers that might stopPropagation
+  setTimeout(() => document.addEventListener('click', window.__accountMenuOutsideHandler, true), 0);
+
+  updateSignedInUsername();
+}
+
+updateUsernameDisplay();

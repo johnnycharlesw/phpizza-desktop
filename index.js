@@ -16,7 +16,6 @@ iframe.addEventListener('load', function (params) {
 function navigateTo(url) {
     iframe.src=url;
     playDialUpSfx();
-    updateSignedInUsername();
 }
 
 function goHome(){
@@ -44,7 +43,7 @@ function _closeBrowser() {
 }
 
 function closeBrowser() {
-  if (window.incognito) {
+  if (window.phpizzaDesktop?.incognito) {
     navigateTo('http://phpizza.localhost/DestroySessionToken.php');
     iframe.addEventListener('load', function (){
         _closeBrowser();

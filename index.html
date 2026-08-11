@@ -37,9 +37,8 @@
                 </ul>
             </li>
         </ul>
-        <iframe id="iframe" src="http://localhost" sandbox="allow-scripts allow-forms allow-same-origin"></iframe>
+        <iframe id="iframe" src="" sandbox="allow-scripts allow-forms allow-same-origin"></iframe>
         <audio id="dialup_sfx" src="./sounds/freesound_community-the-sound-of-dial-up-internet-6240.mp3" loop></audio>
-        <script src="index.js"></script>
         <div id="user-dropdown">
             <img src="/node_modules/feather-icons/dist/icons/user.svg" class="icon" width=64 height=64></img>
             <br>
@@ -52,5 +51,19 @@
     </div>
 
     <script src="account-menu.js"></script>
+    <script src="index.js"></script>
+        <script>
+            // Ensure the iframe uses the same origin (including port) as this page
+            (function() {
+                try {
+                    var ifr = document.getElementById('iframe');
+                    if (ifr && !ifr.src) {
+                        ifr.src = window.location.origin;
+                    }
+                } catch (e) {
+                    console.error('Failed to set iframe src to same origin', e);
+                }
+            })();
+        </script>
 </body>
 </html>
