@@ -28,6 +28,10 @@ function goToAdminPanel() {
   navigateTo('http://phpizza.localhost/AdminPanel.php');
 }
 
+function goToSpecialPageList() {
+  navigateTo('http://phpizza.localhost/SpecialPages.php');
+}
+
 function toggleFullscreen(){
   if (fullscreen) {
     document.exitFullscreen();
