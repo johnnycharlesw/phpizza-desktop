@@ -4,7 +4,7 @@ const express = require('express');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const server = express();
 const PORT = process.env.PORT || 1234;
-const UI_DIR = path.join(process.cwd(), '.');
+const UI_DIR = path.join(__dirname, '.');
 const PHPIZZA_PARTITION = 'persist:phpizza';
 const PHPIZZA_COOKIE_URLS = [
   `http://phpizza.localhost:${PORT}/`,
