@@ -1,6 +1,6 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('phpizzaDesktop', {
-  incognito: true,
+  incognito: false,
   getSignedInUser: () => ipcRenderer.invoke('phpizza:get-username'),
 });

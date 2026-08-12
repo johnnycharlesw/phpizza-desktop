@@ -1,6 +1,8 @@
 let iframe = document.getElementById('iframe');
 let dialup_sfx = document.getElementById('dialup_sfx');
 let fullscreen = false;
+let dialed = false;
+const POST_DIAL_TIMESTAMP = 6.804707;
 
 
 console.log(iframe);
@@ -8,7 +10,7 @@ console.log(iframe);
 iframe.addEventListener('load', function (params) {
     if (!(dialup_sfx.paused)) {
         dialup_sfx.pause();
-        dialup_sfx.currentTime = 6.804707;
+        dialup_sfx.currentTime = POST_DIAL_TIMESTAMP;
     }
     updateSignedInUsername();
 })
@@ -63,3 +65,13 @@ goHome();
 iframe.addEventListener('loadstart', playDialUpSfx);
 
 iframe.addEventListener('formdata', playDialUpSfx);
+
+setInterval(() => {
+    if (dialup_sfx.currentTime > POST_DIAL_TIMESTAMP) {
+        dialed = true;
+    }
+
+    if (dialed && dialup_sfx.currentTime < POST_DIAL_TIMESTAMP) {
+        dialup_sfx.currentTime = POST_DIAL_TIMESTAMP;
+    }
+}, 10);

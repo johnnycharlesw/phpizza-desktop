@@ -147,8 +147,8 @@ function toggleAccountMenu() {
   }
 
   const wasOpen = userDropdown.classList.contains('open');
+  userDropdown.classList.toggle('open');
   if (wasOpen) {
-    userDropdown.classList.remove('open');
     userDropdown.style.position = '';
     userDropdown.style.top = '';
     userDropdown.style.left = '';
