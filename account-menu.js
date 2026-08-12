@@ -130,16 +130,8 @@ async function updateSignedInUsername() {
 function toggleAccountMenu() {
   if (!userDropdown) {
     userDropdown = document.getElementById('user-dropdown');
-    // Move dropdown to document.body to avoid stacking-context issues (iframe z-index)
-    try {
-      if (userDropdown && userDropdown.parentElement !== document.body) {
-        document.body.appendChild(userDropdown);
-      }
-    } catch (e) {
-      console.debug('[account-menu] failed to move dropdown to body', e);
-    }
+    
   }
-
   console.debug('[account-menu] toggleAccountMenu called');
   if (!userDropdown) {
     console.warn('[account-menu] user-dropdown element not found');
@@ -149,11 +141,6 @@ function toggleAccountMenu() {
   const wasOpen = userDropdown.classList.contains('open');
   userDropdown.classList.toggle('open');
   if (wasOpen) {
-    userDropdown.style.position = '';
-    userDropdown.style.top = '';
-    userDropdown.style.left = '';
-    userDropdown.style.zIndex = '';
-    userDropdown.style.visibility = '';
     if (window.__accountMenuOutsideHandler) {
       document.removeEventListener('click', window.__accountMenuOutsideHandler, true);
       window.__accountMenuOutsideHandler = null;
@@ -164,8 +151,6 @@ function toggleAccountMenu() {
   // Position the dropdown relative to the account switch button if possible.
   // Measure the dropdown while hidden so width/height are available.
   const btn = document.getElementById('account_switch_button');
-  userDropdown.style.visibility = 'hidden';
-  userDropdown.classList.add('open');
   userDropdown.style.position = 'fixed';
   userDropdown.style.zIndex = 100000;
   userDropdown.style.pointerEvents = 'auto';
@@ -196,8 +181,6 @@ function toggleAccountMenu() {
     console.debug('[account-menu] position calculation failed', e);
   }
 
-  // Make it visible now that position is set
-  userDropdown.style.visibility = 'visible';
 
   // Add outside click handler to close the menu
   window.__accountMenuOutsideHandler = function outsideClick(e) {
