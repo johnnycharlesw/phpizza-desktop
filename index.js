@@ -68,7 +68,7 @@ goHome();
 
 iframe.addEventListener('loadstart', playDialUpSfx);
 
-iframe.addEventListener('formdata', playDialUpSfx);
+iframe.addEventListener('waiting', playDialUpSfx);
 
 setInterval(() => {
     if (dialup_sfx.currentTime > POST_DIAL_TIMESTAMP) {
